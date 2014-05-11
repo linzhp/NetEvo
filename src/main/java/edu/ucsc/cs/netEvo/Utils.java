@@ -8,6 +8,8 @@ import org.eclipse.jdt.internal.compiler.ast.CompilationUnitDeclaration;
 import org.eclipse.jdt.internal.compiler.batch.CompilationUnit;
 import org.eclipse.jdt.internal.compiler.env.ICompilationUnit;
 import org.eclipse.jdt.internal.compiler.impl.CompilerOptions;
+import org.eclipse.jdt.internal.compiler.lookup.CompilationUnitScope;
+import org.eclipse.jdt.internal.compiler.lookup.LookupEnvironment;
 import org.eclipse.jdt.internal.compiler.parser.Parser;
 import org.eclipse.jdt.internal.compiler.problem.DefaultProblemFactory;
 import org.eclipse.jdt.internal.compiler.problem.ProblemReporter;
@@ -22,15 +24,19 @@ public class Utils {
 	        options.complianceLevel = v;
 	        options.sourceLevel = v;
 	        options.targetJDK = v;
-	        Parser parser = new Parser(
-	        		new ProblemReporter(
-		                DefaultErrorHandlingPolicies.proceedWithAllProblems(),
-		                options,
-		                new DefaultProblemFactory()),
+	        ProblemReporter problemReporter = new ProblemReporter(
+			    DefaultErrorHandlingPolicies.proceedWithAllProblems(),
+			    options,
+			    new DefaultProblemFactory());
+			Parser parser = new Parser(
+	        		problemReporter,
 		            false);
 	        ICompilationUnit cu = new CompilationUnit(sourceCode.toCharArray(), fileName, null);
 	        CompilationResult compilationResult = new CompilationResult(cu, 0, 0, options.maxProblemsPerUnit);
 	        CompilationUnitDeclaration ast = parser.parse(cu, compilationResult);
+	        if (ast.scope == null) {
+	        	ast.scope = new CompilationUnitScope(ast, new LookupEnvironment(null, options, problemReporter, null));
+	        }
 	        if (!compilationResult.hasSyntaxError) {
 	        	return ast;
 	        }
