@@ -74,14 +74,62 @@ public class SourceFileAnalyzer extends ASTVisitor {
 	@Override
 	public boolean visit(ImportReference importRef, CompilationUnitScope scope) {
 		// TODO build import list
-		return true; // do nothing by default, keep traversing
-	}
-
-	public boolean visit(
-    		SingleTypeReference singleTypeReference,
-    		BlockScope scope) {
-		edges.add(new Dependency(getQualifiedName(scope), new String(singleTypeReference.token)));
 		return true;
 	}
 
+	@Override
+	public boolean visit(
+    		SingleTypeReference singleTypeReference,
+    		BlockScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope), singleTypeReference.toString()));
+		return true;
+	}
+
+	@Override
+	public boolean visit(
+    		SingleTypeReference singleTypeReference,
+    		ClassScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope), singleTypeReference.toString()));
+		return true;
+	}
+	
+	@Override
+	public boolean visit(
+    		QualifiedTypeReference qualifiedTypeReference,
+    		BlockScope scope) {
+		edges.add(new Dependency(
+				getQualifiedName(scope), 
+				qualifiedTypeReference.toString()));
+		return true;
+	}
+	
+	@Override
+	public boolean visit(
+    		QualifiedTypeReference qualifiedTypeReference,
+    		ClassScope scope) {
+		edges.add(new Dependency(
+				getQualifiedName(scope), 
+				qualifiedTypeReference.toString()));
+		return true;
+	}
+
+	@Override
+	public boolean visit(
+			QualifiedNameReference qualifiedNameReference,
+			BlockScope scope) {
+		edges.add(new Dependency(
+				getQualifiedName(scope), 
+				qualifiedNameReference.toString()));
+		return true;
+	}
+	
+	@Override
+	public boolean visit(
+			QualifiedNameReference qualifiedNameReference,
+			ClassScope scope) {
+		edges.add(new Dependency(
+				getQualifiedName(scope), 
+				qualifiedNameReference.toString()));
+		return true;
+	}
 }

@@ -47,6 +47,19 @@ public class SourceFileAnalyzerTest {
 		assertThat(edges,hasItemInArray(new HasTarget<>("SourceFileAnalyzer")));
 	}
 
+	@Test
+	public void shouldGetQualifiedTypeReference() throws IOException {
+		Dependency[] edges = getEdges();
+		assertThat(edges,hasItemInArray(new HasTarget<>("com.google.common.base.Joiner")));
+	}
+
+	@Test
+	public void shouldGetQualifiedNameReference() throws IOException {
+		Dependency[] edges = getEdges();
+		assertThat(edges,hasItemInArray(new HasTarget<>("com.google.common.collect.Lists")));
+		assertThat(edges,hasItemInArray(new HasTarget<>("System.out")));
+	}
+
 	private CodeEntity[] getVertices() throws IOException {
 		SourceFileAnalyzer analyzer = parseFile();
 		CodeEntity[] vertices = analyzer.vertices.toArray(new CodeEntity[analyzer.vertices.size()]);

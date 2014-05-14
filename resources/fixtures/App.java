@@ -11,6 +11,8 @@ public class App
     public static void main( String[] args )
     {
     	SourceFileAnalyzer s;
+    	com.google.common.base.Joiner joiner;
+    	com.google.common.collect.Lists.asList("a", "b");
         System.out.println( "Hello World!" );
     }
     
