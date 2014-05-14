@@ -8,5 +8,10 @@ public class CodeEntity {
 		this.qualifiedName = name;
 		this.fileId = fileId;
 	}
+	
+	@Override
+	public String toString() {
+		return qualifiedName;
+	}
 }
 
