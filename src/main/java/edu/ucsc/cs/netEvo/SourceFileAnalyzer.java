@@ -44,6 +44,14 @@ public class SourceFileAnalyzer extends ASTVisitor {
 		return Joiner.on('.').join(Lists.reverse(parts));
 	}
 
+	private static String[] toStringArray(char[][] tokens) {
+		String parts[] = new String[tokens.length];
+		for (int i = 0; i < tokens.length; i++) {
+			parts[i] = new String(tokens[i]);
+		}
+		return parts;
+	}
+
 	@Override
 	public boolean visit(TypeDeclaration memberTypeDeclaration, ClassScope scope) {
 		memberTypeDeclaration.scope = new ClassScope(scope,
@@ -71,6 +79,14 @@ public class SourceFileAnalyzer extends ASTVisitor {
 		return true;
 	}
 
+	public boolean visit(ConstructorDeclaration constructorDeclaration,
+			ClassScope scope) {
+		constructorDeclaration.scope = new MethodScope(scope, constructorDeclaration, false);
+		vertices.add(new CodeEntity(
+				getQualifiedName(constructorDeclaration.scope), fileId));
+		return true;
+	}
+
 	@Override
 	public boolean visit(ImportReference importRef, CompilationUnitScope scope) {
 		// TODO build import list
@@ -78,58 +94,94 @@ public class SourceFileAnalyzer extends ASTVisitor {
 	}
 
 	@Override
-	public boolean visit(
-    		SingleTypeReference singleTypeReference,
-    		BlockScope scope) {
-		edges.add(new Dependency(getQualifiedName(scope), singleTypeReference.toString()));
-		return true;
-	}
-
-	@Override
-	public boolean visit(
-    		SingleTypeReference singleTypeReference,
-    		ClassScope scope) {
-		edges.add(new Dependency(getQualifiedName(scope), singleTypeReference.toString()));
-		return true;
-	}
-	
-	@Override
-	public boolean visit(
-    		QualifiedTypeReference qualifiedTypeReference,
-    		BlockScope scope) {
-		edges.add(new Dependency(
-				getQualifiedName(scope), 
-				qualifiedTypeReference.toString()));
-		return true;
-	}
-	
-	@Override
-	public boolean visit(
-    		QualifiedTypeReference qualifiedTypeReference,
-    		ClassScope scope) {
-		edges.add(new Dependency(
-				getQualifiedName(scope), 
-				qualifiedTypeReference.toString()));
-		return true;
-	}
-
-	@Override
-	public boolean visit(
-			QualifiedNameReference qualifiedNameReference,
+	public boolean visit(SingleTypeReference singleTypeReference,
 			BlockScope scope) {
-		edges.add(new Dependency(
-				getQualifiedName(scope), 
+		edges.add(new Dependency(getQualifiedName(scope), singleTypeReference
+				.toString()));
+		return true;
+	}
+
+	@Override
+	public boolean visit(SingleTypeReference singleTypeReference,
+			ClassScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope), singleTypeReference
+				.toString()));
+		return true;
+	}
+
+	@Override
+	public boolean visit(QualifiedTypeReference qualifiedTypeReference,
+			BlockScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope),
+				qualifiedTypeReference.toString()));
+		return true;
+	}
+
+	@Override
+	public boolean visit(QualifiedTypeReference qualifiedTypeReference,
+			ClassScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope),
+				qualifiedTypeReference.toString()));
+		return true;
+	}
+
+	@Override
+	public boolean visit(QualifiedNameReference qualifiedNameReference,
+			BlockScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope),
 				qualifiedNameReference.toString()));
 		return true;
 	}
-	
+
+	@Override
+	public boolean visit(QualifiedNameReference qualifiedNameReference,
+			ClassScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope),
+				qualifiedNameReference.toString()));
+		return true;
+	}
+
 	@Override
 	public boolean visit(
-			QualifiedNameReference qualifiedNameReference,
-			ClassScope scope) {
-		edges.add(new Dependency(
-				getQualifiedName(scope), 
-				qualifiedNameReference.toString()));
+			ArrayQualifiedTypeReference arrayQualifiedTypeReference,
+			BlockScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope), Joiner.on('.').join(
+				toStringArray(arrayQualifiedTypeReference.tokens))));
 		return true;
 	}
+
+	@Override
+	public boolean visit(
+			ArrayQualifiedTypeReference arrayQualifiedTypeReference,
+			ClassScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope), Joiner.on('.').join(
+				toStringArray(arrayQualifiedTypeReference.tokens))));
+		return true;
+	}
+
+	@Override
+	public boolean visit(ArrayTypeReference arrayTypeReference, BlockScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope), new String(
+				arrayTypeReference.token)));
+		return true;
+	}
+
+	@Override
+	public boolean visit(ArrayTypeReference arrayTypeReference, ClassScope scope) {
+		edges.add(new Dependency(getQualifiedName(scope), new String(
+				arrayTypeReference.token)));
+		return true;
+	}
+
+	public boolean visit(ExplicitConstructorCall explicitConstructor,
+			BlockScope scope) {
+		// not process for now
+		return true;
+	}
+
+	public boolean visit(SingleNameReference singleNameReference,
+			BlockScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+
 }

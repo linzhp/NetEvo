@@ -30,6 +30,12 @@ public class SourceFileAnalyzerTest {
 	}
 	
 	@Test
+	public void shouldGetConstructor() throws IOException {
+		CodeEntity[] vertices = getVertices();
+		assertThat(vertices, hasItemInArray(new HasName<>("edu.ucsc.cs.netEvo.App.App")));
+	}
+	
+	@Test
 	public void shouldGetInnerClassName() throws IOException {
 		CodeEntity[] vertices = getVertices();
 		assertThat(vertices, hasItemInArray(new HasName<>("edu.ucsc.cs.netEvo.App.Component")));		
@@ -58,6 +64,18 @@ public class SourceFileAnalyzerTest {
 		Dependency[] edges = getEdges();
 		assertThat(edges,hasItemInArray(new HasTarget<>("com.google.common.collect.Lists")));
 		assertThat(edges,hasItemInArray(new HasTarget<>("System.out")));
+	}
+
+	@Test
+	public void shouldGetArrayQualifiedTypeReference() throws IOException {
+		Dependency[] edges = getEdges();
+		assertThat(edges,hasItemInArray(new HasTarget<>("edu.ucsc.cs.netEvo.CodeEntity")));
+	}
+
+	@Test
+	public void shouldGetArrayTypeReference() throws IOException {
+		Dependency[] edges = getEdges();
+		assertThat(edges,hasItemInArray(new HasTarget<>("String")));
 	}
 
 	private CodeEntity[] getVertices() throws IOException {
