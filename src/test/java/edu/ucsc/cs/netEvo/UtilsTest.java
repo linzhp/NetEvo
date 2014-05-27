@@ -17,7 +17,7 @@ public class UtilsTest {
 	public void testCompile() throws IOException {
 		String fileName = "resources/fixtures/App.java";
 		String sourceCode = Files.toString(new File(fileName), Charsets.UTF_8);
-		CompilationUnitDeclaration ast = Utils.compile(sourceCode, fileName);
+		CompilationUnitDeclaration ast = Utils.parse(sourceCode, fileName);
 		assertEquals("edu.ucsc.cs.netEvo", ast.currentPackage.toString());
 	}
 

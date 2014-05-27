@@ -44,18 +44,14 @@ public class SourceFileAnalyzer extends ASTVisitor {
 		return Joiner.on('.').join(Lists.reverse(parts));
 	}
 
-	private static String[] toStringArray(char[][] tokens) {
-		String parts[] = new String[tokens.length];
-		for (int i = 0; i < tokens.length; i++) {
-			parts[i] = new String(tokens[i]);
-		}
-		return parts;
-	}
-
 	@Override
 	public boolean visit(TypeDeclaration memberTypeDeclaration, ClassScope scope) {
 		memberTypeDeclaration.scope = new ClassScope(scope,
 				memberTypeDeclaration);
+		memberTypeDeclaration.initializerScope = new MethodScope(
+				memberTypeDeclaration.scope, memberTypeDeclaration, false);
+		memberTypeDeclaration.staticInitializerScope = new MethodScope(
+				memberTypeDeclaration.scope, memberTypeDeclaration, true);
 		vertices.add(new CodeEntity(
 				getQualifiedName(memberTypeDeclaration.scope), fileId));
 		return true;
@@ -65,6 +61,8 @@ public class SourceFileAnalyzer extends ASTVisitor {
 	public boolean visit(TypeDeclaration typeDeclaration,
 			CompilationUnitScope scope) {
 		typeDeclaration.scope = new ClassScope(scope, typeDeclaration);
+		typeDeclaration.initializerScope = new MethodScope(typeDeclaration.scope, typeDeclaration, false);
+		typeDeclaration.staticInitializerScope = new MethodScope(typeDeclaration.scope, typeDeclaration, true);
 		vertices.add(new CodeEntity(getQualifiedName(typeDeclaration.scope),
 				fileId));
 		return true;
@@ -84,6 +82,18 @@ public class SourceFileAnalyzer extends ASTVisitor {
 		constructorDeclaration.scope = new MethodScope(scope, constructorDeclaration, false);
 		vertices.add(new CodeEntity(
 				getQualifiedName(constructorDeclaration.scope), fileId));
+		return true;
+	}
+
+	public boolean visit(Clinit clinit, ClassScope scope) {
+		clinit.scope = new MethodScope(scope, clinit, clinit.isStatic());
+		return true; // do nothing by default, keep traversing
+	}
+
+	public boolean visit(FieldDeclaration fieldDeclaration, MethodScope scope) {
+		String fieldName = getQualifiedName(scope) + "." + new String(fieldDeclaration.name);
+		vertices.add(new CodeEntity(
+				fieldName, fileId));
 		return true;
 	}
 
@@ -146,7 +156,7 @@ public class SourceFileAnalyzer extends ASTVisitor {
 			ArrayQualifiedTypeReference arrayQualifiedTypeReference,
 			BlockScope scope) {
 		edges.add(new Dependency(getQualifiedName(scope), Joiner.on('.').join(
-				toStringArray(arrayQualifiedTypeReference.tokens))));
+				Utils.toStringArray(arrayQualifiedTypeReference.tokens))));
 		return true;
 	}
 
@@ -155,7 +165,7 @@ public class SourceFileAnalyzer extends ASTVisitor {
 			ArrayQualifiedTypeReference arrayQualifiedTypeReference,
 			ClassScope scope) {
 		edges.add(new Dependency(getQualifiedName(scope), Joiner.on('.').join(
-				toStringArray(arrayQualifiedTypeReference.tokens))));
+				Utils.toStringArray(arrayQualifiedTypeReference.tokens))));
 		return true;
 	}
 
@@ -173,14 +183,20 @@ public class SourceFileAnalyzer extends ASTVisitor {
 		return true;
 	}
 
+	@Override
 	public boolean visit(ExplicitConstructorCall explicitConstructor,
 			BlockScope scope) {
-		// not process for now
+		// not process for now, postpone until method overloading is considered
 		return true;
 	}
 
-	public boolean visit(SingleNameReference singleNameReference,
-			BlockScope scope) {
+	@Override
+	public boolean visit(FieldReference fieldReference, BlockScope scope) {
+		return true; // do nothing by default, keep traversing
+	}
+
+	@Override
+	public boolean visit(FieldReference fieldReference, ClassScope scope) {
 		return true; // do nothing by default, keep traversing
 	}
 

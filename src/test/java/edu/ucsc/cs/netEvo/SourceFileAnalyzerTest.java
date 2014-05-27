@@ -30,6 +30,12 @@ public class SourceFileAnalyzerTest {
 	}
 	
 	@Test
+	public void shouldGetFieldName() throws IOException {
+		CodeEntity[] vertices = getVertices();
+		assertThat(vertices, hasItemInArray(new HasName<>("edu.ucsc.cs.netEvo.App.mode")));
+	}
+	
+	@Test
 	public void shouldGetConstructor() throws IOException {
 		CodeEntity[] vertices = getVertices();
 		assertThat(vertices, hasItemInArray(new HasName<>("edu.ucsc.cs.netEvo.App.App")));
@@ -92,7 +98,7 @@ public class SourceFileAnalyzerTest {
 	private SourceFileAnalyzer parseFile() throws IOException {
 		String fileName = "resources/fixtures/App.java";
 		String sourceCode = Files.toString(new File(fileName), Charsets.UTF_8);
-		CompilationUnitDeclaration ast = Utils.compile(sourceCode, fileName);
+		CompilationUnitDeclaration ast = Utils.parse(sourceCode, fileName);
 		SourceFileAnalyzer analyzer = new SourceFileAnalyzer(0);
 		ast.traverse(analyzer, ast.scope);
 		return analyzer;
